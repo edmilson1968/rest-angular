@@ -1,0 +1,100 @@
+<div class="container-fluid">
+  <p>
+  <form [formGroup]="clienteForm" (ngSubmit)="onSubmit()" novalidate>
+
+    <div formGroupName="dadosCliente" novalidate>
+      <div class="row">
+        <div class="col-sm">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text" id="basic-addon1">Nome Cliente</span>
+            </div>
+            <input formControlName="nome" class="form-control" placeholder="Digite seu nome" aria-label="nome"
+              aria-describedby="basic-addon1" required>
+            <div *ngIf="nome.invalid && (nome.dirty || nome.touched)"
+              class="alert alert-danger">
+              <div *ngIf="nome.errors.required">
+                Nome é obrigatório.
+              </div>
+              <div *ngIf="nome.errors.minlength">
+                Nome deve ter ao menos 4 letras.
+              </div>
+            </div>              
+          </div>
+        </div>
+        <div class="col-sm">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <span class="input-group-text">Limite de Crédito</span>
+            </div>
+            <input formControlName="limite" class="form-control" placeholder="Valor em R$" aria-label="quantidade em reais" required>
+          </div>
+          <div *ngIf="limite.invalid && (limite.dirty || limite.touched)"
+            class="alert alert-danger">
+            <div *ngIf="limite.errors.required">
+              Limite é obrigatório.
+            </div>
+            <div *ngIf="limite.errors.min">
+              Limite deve ser positivo.
+            </div>
+          </div>              
+
+        </div>
+        <div class="col-sm">
+          <div class="input-group mb-3">
+            <div class="input-group-prepend">
+              <label class="input-group-text" for="tipoRisco">Risco</label>
+            </div>
+            <select formControlName="risco" class="custom-select" id="tipoRisco" placeholder="Escolha o Tipo do Risco..." required>
+              <option *ngFor="let tir of tiposRisco" [ngValue]="tir.tipo">{{tir.tipo}}</option>
+            </select>
+          </div>
+        </div>
+      </div>
+    </div>
+    <div class="row">
+      <div class="col-sm">
+        <button type="submit" class="btn btn-primary" [disabled]="clienteForm.pristine">Salvar</button>
+        &nbsp;
+        <button type="button" class="btn btn-primary" (click)="limpaForm()" [disabled]="clienteForm.pristine">Limpar</button>
+      </div>
+    </div>
+</form>
+  <p>
+  <div class="card">
+    <div class="card-body">
+      <table *ngIf="clientes" class="table table-stripped">
+        <thead style="text-align: center">
+          <th style="text-align: left">Nome Cliente</th>
+          <th style="text-align: right">Limite</th>
+          <th>Tipo Risco</th>
+          <th>Taxa Juros</th>
+          <th colspan="2" style="text-align: center">Ações</th>
+        </thead>
+        <tbody>
+          <tr *ngFor="let cli of clientes" (mouseover)="highlightRow(cli)" [ngClass]="{'bg-light' : cli.nome == nomeSelecionado}">
+            <td>{{cli.nome}}</td>
+            <td style="text-align: right">{{getFormattedCurrency(cli.limite)}}</td>
+            <td style="text-align: center">{{cli.risco.tipo}}</td>
+            <td style="text-align: center">
+              <div *ngIf="cli.risco.taxaJuros > 0">{{cli.risco.taxaJuros * 100}}%</div>
+            </td>
+            <td style="text-align: center">
+              <button type="button" (click)="alterar(cli)" class="btn btn-primary btn-sm">alterar</button>
+            </td>
+            <td style="text-align: center">
+              <button type="button" (click)="remove(cli)" class="btn btn-danger btn-sm">apagar</button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+      <hr>
+      <ul class="nav nav-pills">
+        <li class="nav-item" *ngFor="let p of pages; let i = index;">
+          <a class="nav-link" href="" (click)="setPage(i, $event)" [ngClass]="{'active':i==page}">{{i}}</a>
+        </li>
+      </ul>
+    </div>
+  </div>
+
+</div>

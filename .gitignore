@@ -1,0 +1,12 @@
+backend/.DS_Store
+.DS_Store
+backend/.classpath
+backend/.project
+backend/risco_db.mv.db
+backend/risco_db.trace.db
+backend/.settings/org.eclipse.core.resources.prefs
+backend/.settings/org.eclipse.jdt.core.prefs
+backend/.settings/org.eclipse.m2e.core.prefs
+backend/src/.DS_Store
+backend/target/
+frontend/.editorconfig
