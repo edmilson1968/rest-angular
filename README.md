@@ -1,9 +1,9 @@
-# sistema teste zagwork
+# rest-angular
 
 Para executar o projeto, clonar com:
 
 ```
-$ git clone https://github.com/edmilson1968/zagwork.git
+$ git clone https://github.com/edmilson1968/rest-angular.git
 ```
 ## requisitos
 * java8
