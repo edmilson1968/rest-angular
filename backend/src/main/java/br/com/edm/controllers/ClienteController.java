@@ -7,7 +7,9 @@ import javax.validation.constraints.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +20,11 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+
 import br.com.edm.entities.Cliente;
-import br.com.edm.repositories.ClienteRepository;
+import br.com.edm.repositories.ClienteNotFoundException;
+import br.com.edm.services.ClienteService;
 
 @RestController
 @CrossOrigin(allowedHeaders="*")
@@ -27,43 +32,77 @@ import br.com.edm.repositories.ClienteRepository;
 public class ClienteController {
 
 	@Autowired
-	private ClienteRepository clienteRepository;
+    private ObjectMapper objectMapper;
+	@Autowired
+	private ClienteService clienteService;
 	
 	public ClienteController() {}
 	
 	@GetMapping(value="/clientes", produces = {MediaType.APPLICATION_JSON_VALUE} )
-	public Page<Cliente> getClientes(@NotNull final Pageable pageable) {
-		return clienteRepository.findAll(pageable);
+	public ResponseEntity<?> getClientes(@NotNull final Pageable pageable) {
+		Page<Cliente> clientes = clienteService.findAll(pageable);
+		return new ResponseEntity<Page<Cliente>>(clientes, HttpStatus.OK);
 	}
 
 	@GetMapping(value="/clientes/{nome}", produces = {MediaType.APPLICATION_JSON_VALUE} )
-	public Optional<Cliente> getOneCliente(@PathVariable String nome) {
-		return clienteRepository.findById(nome);
+	public ResponseEntity<?> getOneCliente(@PathVariable String nome) {
+		 Optional<Cliente> cliente = clienteService.getCliente(nome);
+		 if (!cliente.isPresent()) {
+			 throw new ClienteNotFoundException("nome-" + nome);
+		 } else {
+			 return new ResponseEntity<Cliente>(cliente.get(), HttpStatus.OK);
+		 }
 	}
 
 	@PostMapping("/clientes")
-	public Cliente addCliente(@RequestBody Cliente cliente) {
-		return clienteRepository.save(cliente);
+	public ResponseEntity<?> addCliente(@RequestBody String cliente) {
+		
+		Cliente oCli = null;
+		try {
+			oCli = objectMapper.readValue(cliente, Cliente.class);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+//			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+		
+		Cliente newCliente = clienteService.addCliente(oCli);
+		if (newCliente != null) {
+			return new ResponseEntity<Cliente>(newCliente, HttpStatus.CREATED);
+		} else {
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		}
 	}
 
 	@PutMapping("/clientes/{nome}")
-	public Cliente updateCliente(@RequestBody Cliente novoCliente, @PathVariable String nome) {
-		return clienteRepository.findById(nome)
-				.map(cliente -> {
-					cliente.setNome(novoCliente.getNome());
-					cliente.setLimite(novoCliente.getLimite());
-					cliente.setRisco(novoCliente.getRisco());
-					return clienteRepository.save(cliente);
-				})
-				.orElseGet(() -> {
-					novoCliente.setNome(nome);
-					return clienteRepository.save(novoCliente);
-				});
+	public ResponseEntity<?> updateCliente(@RequestBody String novoCliente, @PathVariable String nome) {
+		if (novoCliente == null)
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		if (nome == null || nome.isEmpty())
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+
+		Cliente oCli = null;
+		try {
+			oCli = objectMapper.readValue(novoCliente, Cliente.class);
+		} catch (Exception e) {
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+			//return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
+
+		Cliente cli = clienteService.updateCliente(oCli, nome);
+		return new ResponseEntity<Cliente>(cli, HttpStatus.OK);
 	}
 
 	@DeleteMapping("/clientes/{nome}")
-	public void deleteCliente(@PathVariable String nome) {
-		clienteRepository.deleteById(nome);
+	public ResponseEntity<?> deleteCliente(@PathVariable String nome) {
+		if (nome == null || nome.isEmpty())
+			return new ResponseEntity<>(HttpStatus.BAD_REQUEST);
+		
+		try {
+			clienteService.deleteCliente(nome);
+			return new ResponseEntity<>(HttpStatus.OK);
+		} catch (Exception e) {
+			return new ResponseEntity<>(e.getMessage(), HttpStatus.INTERNAL_SERVER_ERROR);
+		}
 	}
 
 

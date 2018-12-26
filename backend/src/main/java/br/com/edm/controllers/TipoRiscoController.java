@@ -1,43 +1,44 @@
 package br.com.edm.controllers;
 
-import java.util.Optional;
+import java.util.ArrayList;
+import java.util.List;
 
-import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.data.domain.Sort;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
-import br.com.edm.entities.TipoRisco;
-import br.com.edm.repositories.TipoRiscoRepository;
+import br.com.edm.entities.TipoRiscoEnum;
 
 @RestController
 @CrossOrigin(allowedHeaders="*")
 @RequestMapping("/api")
 public class TipoRiscoController {
 
-	@Autowired
-	private TipoRiscoRepository riscoRepository;
+	private List<TipoRiscoEnum> riscos;
 	
-	public TipoRiscoController() {}
+	public TipoRiscoController() {
+		riscos = new ArrayList<>();
+		riscos.add(TipoRiscoEnum.A);
+		riscos.add(TipoRiscoEnum.B);
+		riscos.add(TipoRiscoEnum.C);
+	}
 	
 	@GetMapping("/riscos")
-	public Iterable<TipoRisco> getTiposRisco() {
-		return riscoRepository.findAll(Sort.by("tipo").ascending());
+	public ResponseEntity<List<TipoRiscoEnum>> getTiposRisco() {
+		return new ResponseEntity<List<TipoRiscoEnum>>(riscos, HttpStatus.OK) {} ;
 	}
-
+	
 	@GetMapping("/riscos/{id}")
-	public Optional<TipoRisco> getOneTipoRisco(@PathVariable String id) {
-		return riscoRepository.findById(id);
+	public ResponseEntity<TipoRiscoEnum> getOneTipoRisco(@PathVariable String id) {
+		TipoRiscoEnum risco = TipoRiscoEnum.getByTipo(id);
+		
+		if (risco == null)
+			return new ResponseEntity<>(HttpStatus.NOT_FOUND);
+		
+		return new ResponseEntity<TipoRiscoEnum>(risco, HttpStatus.OK);
 	}
-
-	@PostMapping("/riscos")
-	public TipoRisco addTiposRisco(TipoRisco risco) {
-		return riscoRepository.save(risco);
-	}
-
-
 }

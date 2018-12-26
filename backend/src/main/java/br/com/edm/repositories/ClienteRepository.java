@@ -4,6 +4,6 @@ import org.springframework.data.repository.PagingAndSortingRepository;
 
 import br.com.edm.entities.Cliente;
 
-public interface ClienteRepository extends PagingAndSortingRepository<Cliente,String>{
+public interface ClienteRepository extends PagingAndSortingRepository<Cliente,String> {
 
 }

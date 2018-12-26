@@ -4,23 +4,28 @@ import java.math.BigDecimal;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.JoinColumn;
-import javax.persistence.ManyToOne;
+
+import br.com.edm.validation.Enum;
 
 @Entity
 public class Cliente {
 
 	@Id
+	@javax.validation.constraints.NotNull(message="o nome não pode ser nulo!")
+	@javax.validation.constraints.Size(min=4, message="o nome deve possuir ao menos 4 letras")
+	@javax.validation.constraints.NotEmpty(message="o nome não pode ser vazio")
 	private String nome;
+	
+	@javax.validation.constraints.NotNull(message="o limite não pode ser nulo!")
+	@javax.validation.constraints.Digits(fraction=2, integer=10, message="formato de numero invalido!")
 	private BigDecimal limite;
 	
-	@ManyToOne
-	@JoinColumn
-	private TipoRisco risco;
+	@Enum(enumClass=TipoRiscoEnum.class, ignoreCase=false, message="somente valores A, B, ou C são permitidos!")
+	private String risco;
 	
 	public Cliente() {}
 
-	public Cliente(String nome, BigDecimal limite, TipoRisco risco) {
+	public Cliente(String nome, BigDecimal limite, String risco) {
 		this.nome = nome;
 		this.limite = limite;
 		this.risco = risco;
@@ -42,11 +47,11 @@ public class Cliente {
 		this.limite = limite;
 	}
 
-	public TipoRisco getRisco() {
+	public String getRisco() {
 		return risco;
 	}
 
-	public void setRisco(TipoRisco risco) {
+	public void setRisco(String risco) {
 		this.risco = risco;
 	}
 
